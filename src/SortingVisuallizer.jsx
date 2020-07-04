@@ -6,7 +6,8 @@ import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 var speed = 0;
 var speedQ = 0;
 var size = 0 ;
-
+var delay_time=10000/(5*50);
+var delay_between_ops = 0;
 class Queue 
 { 
     // Array is used to implement a Queue 
@@ -65,6 +66,7 @@ export default function SortingVisualizer(){
       console.log(value);
       if(name === "size"){
         const array = [];
+        delay_time=10000/(Math.floor(allStates.size/10)*value);
         for (let i = 0; i < value ; i++) {
           array.push(Math.floor(Math.random() * (200 - 50 + 1) + 50));
         }
@@ -78,6 +80,7 @@ export default function SortingVisualizer(){
 
       }
       if(name === "speedBar"){
+        delay_time=10000/(Math.floor(allStates.size/10)*value);
         speed = allStates.speedBar;
         speedQ = allStates.speedBar;
 
@@ -129,6 +132,19 @@ export default function SortingVisualizer(){
 
 
         mergeSortHelper(allStates.array, 0, allStates.array.length - 1, auxiliaryArray,temp,allStates.array.length);
+        speedQ++;
+       
+        setTimeout(() => {
+          changeStates(prevUser=>{
+            return {
+                ...prevUser,
+                array : auxiliaryArray
+            }
+           
+          });
+        },10*speedQ);
+
+
       }
 
       function mergeSortHelper(mainArray,startIdx,endIdx,auxiliaryArray,temp,length){
@@ -483,6 +499,67 @@ export default function SortingVisualizer(){
 
     }
 
+    function insertionSort(){
+      var queue2 = new Queue();
+      var speedI = allStates.speedBar;
+      var auxiliaryArray = allStates.array.slice();
+      const arrayBars = document.getElementsByClassName("array-bar");
+      for (let i = 1; i < auxiliaryArray.length; i++) {
+        let j = i - 1;
+        let tmp = auxiliaryArray[i];
+        queue2.enqueue(i);
+        speedI++;
+        delay_between_ops+=delay_time;
+        setTimeout(() => {
+          const barOneStyle = arrayBars[queue2.dequeue()].style;
+          barOneStyle.backgroundColor = 'yellow';
+        },delay_between_ops);
+
+
+        while (j >= 0 && auxiliaryArray[j] > tmp) {
+
+          queue2.enqueue([j,i]);
+          speedI++;
+          delay_between_ops+=delay_time;
+          setTimeout(() => {
+            const [a,b] = queue2.dequeue();
+            const barOneStyle = arrayBars[a].style;
+            const barTwoStyle = arrayBars[a+1].style;
+            barOneStyle.backgroundColor = 'red';
+            barTwoStyle.backgroundColor = 'red';
+            
+        },delay_between_ops);
+
+        queue2.enqueue(j);
+          speedI++;
+          delay_between_ops+=delay_time;
+          setTimeout(() => {
+            const a = queue2.dequeue();
+            const barOneStyle = arrayBars[a].style;
+            const barTwoStyle = arrayBars[a+1].style;
+            const heightOne = barOneStyle.height;
+            const heightTwo = barTwoStyle.height;
+            barOneStyle.height = heightTwo;
+            barTwoStyle.height = heightOne;
+        },delay_between_ops);
+
+        queue2.enqueue(j);
+          speedI++;
+          delay_between_ops+=delay_time;
+          setTimeout(() => {
+            const a = queue2.dequeue();
+            const barOneStyle = arrayBars[a].style;
+            const barTwoStyle = arrayBars[a+1].style;
+            barOneStyle.backgroundColor = 'green';
+            barTwoStyle.backgroundColor = 'green';
+        },delay_between_ops);
+
+        [auxiliaryArray[j+1], auxiliaryArray[j]] = [auxiliaryArray[j], auxiliaryArray[j+1]];
+          j--
+        }
+      }
+      allStates.array = auxiliaryArray.slice();
+    }
 
     return <div>
       <div>
@@ -507,6 +584,9 @@ export default function SortingVisualizer(){
             </li>
             <li class="nav-item active ">
             <button class="btn btn-outline-success my-2 my-sm-0" type="submit"  onClick={quickSort}>Quick Sort</button>
+            </li>
+            <li class="nav-item active ">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit"  onClick={insertionSort}>Insertion Sort</button>
             </li>
           </ul>
           <form class="form-inline my-2 my-lg-0">
